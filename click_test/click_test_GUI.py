@@ -38,7 +38,7 @@ def on_click():
         if test_started:
             if click_time == 1:
                 if time.perf_counter() - start_time >= click_time:
-                    result.config(text=f"Сокрость: {click_count} CPS")
+                    result.config(text=f"Скорость: {click_count} CPS")
                     # print("РЕЗУЛЬТАТ ТЕСТА: ")
                     # print(f"Сокрость: {click_count} CPS")
                     button_click.config(state="disabled")
@@ -48,7 +48,7 @@ def on_click():
             else:
                 if time.perf_counter() - start_time >= click_time:
                     click_stat = click_count / click_time
-                    result.config(text=f"Сокрость: {click_count} за {click_time} секунд\n" 
+                    result.config(text=f"Скорость: {click_count} за {click_time} секунд\n" 
                                   + f"Примерно: {click_stat:.2f} CPS")
                     # print("РЕЗУЛЬТАТ ТЕСТА: ")
                     # print(f"Сокрость: {click_count} за {click_time} секунд")
