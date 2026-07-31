@@ -157,18 +157,24 @@ def clean():
         clean_sound.play()
 
 def plus_button():
-    global click_time
-    click_sound.play()
+    global click_time, muted
+
     if click_time < 15:
         click_time += 1
         entry_label_time.config(text=click_time)
+
+    if not muted:
+        click_sound.play()
         
 def minus_button():
-    global click_time
-    click_sound.play()
+    global click_time, muted
+    
     if click_time > 1:
         click_time -= 1
         entry_label_time.config(text=click_time)
+
+    if not muted:
+        click_sound.play()
 
 def switch_sound():
     global muted
