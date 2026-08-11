@@ -1,4 +1,6 @@
+import os
 import time
+import json
 import ctypes
 import random
 import winsound
@@ -6,11 +8,13 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from pynput.keyboard import KeyCode
 from pynput.mouse import Button, Controller
 from pynput.keyboard import Listener as KeyboardListener, Key
 
-ACTIVATE_KEY = Key.f6
-CHANGED_ACTIVATE_KEY = Key.f6
+ACTIVATE_KEY = Key.f8
+CHANGED_ACTIVATE_KEY = Key.f8
+SETTING_FILE = "settings.json"
 
 normal_key_name = str(ACTIVATE_KEY).replace("Key.", "").replace("'", "").upper()
 
@@ -19,6 +23,7 @@ clicking = False
 stop_click = False
 is_setting_hotkey = False
 random_activate = False
+on_press_change = False
 click_event = threading.Event()
 winmm = ctypes.windll.winmm
 
@@ -76,12 +81,14 @@ def validate_entry_2(P):
 
 def on_click_setup(event):
     global SELECTED_BUTTON, BUTTON_MAP
+
     user_choice = mouse_choice_label.get()
     SELECTED_BUTTON = BUTTON_MAP[user_choice]
     #print(f"Кнопка мыши изменена на: {user_choice}")
 
 def click_delay():
     global RANDOM_OFFSET_VALUE
+
     mins = int(min_entry.get() or 0)
     seconds = int(sec_entry.get() or 0)
     milliseconds = int(millisec_entry.get() or 0)
@@ -101,8 +108,8 @@ def clicker():
             current_delay = CLICK_DELAY
 
             if random_activate:
-                offset_sec = RANDOM_OFFSET_VALUE / 1000
-                current_delay += random.uniform(-offset_sec, offset_sec)
+                offset_delay = RANDOM_OFFSET_VALUE / 1000
+                current_delay += random.uniform(-offset_delay, offset_delay)
 
                 if current_delay < 0.001:
                     current_delay = 0.001
@@ -112,26 +119,39 @@ def clicker():
             time.sleep(0.1)
 
 def hotkey_choice():
+    global on_press_change
+
+    on_press_change = True
     label_choice.config(text="Choose key")
 
 def open_settings():
     global is_setting_hotkey
+
     setting_window.deiconify()
     setting_window.grab_set()
     setting_window.focus_set()
     is_setting_hotkey = True
 
 def close_settings():
-    global is_setting_hotkey, ACTIVATE_KEY, CHANGED_ACTIVATE_KEY, normal_key_name
+    global is_setting_hotkey
+    global normal_key_name
+    global on_press_change
+    global ACTIVATE_KEY
+    global CHANGED_ACTIVATE_KEY
+
     setting_window.grab_release()
     setting_window.withdraw()
     ACTIVATE_KEY = CHANGED_ACTIVATE_KEY
     normal_key_name = str(ACTIVATE_KEY).replace("Key.", "").replace("'", "").upper()
     button_start.config(text=f"Start({normal_key_name})")
     is_setting_hotkey = False
+    on_press_change = False
 
 def close_setting_no_changes():
     global is_setting_hotkey
+    global on_press_change
+
+    on_press_change = False
     setting_window.grab_release()
     setting_window.withdraw()
     clean_key_name = str(ACTIVATE_KEY).replace("Key.", "").replace("'", "").upper()
@@ -139,9 +159,14 @@ def close_setting_no_changes():
     is_setting_hotkey = False
 
 def on_press_keyboard(key):
-    global clicking, stop_click, CLICK_DELAY, is_setting_hotkey, ACTIVATE_KEY, CHANGED_ACTIVATE_KEY
+    global clicking
+    global stop_click
+    global is_setting_hotkey
+    global CLICK_DELAY
+    global ACTIVATE_KEY
+    global CHANGED_ACTIVATE_KEY
 
-    if is_setting_hotkey: 
+    if is_setting_hotkey and on_press_change: 
         if key in(Key.shift, Key.shift_r, Key.ctrl, Key.ctrl_l, Key.ctrl_r, Key.alt, Key.alt_l, Key.alt_r):
             return
 
@@ -162,6 +187,7 @@ def random_info():
 
 def switch_random():
     global random_activate
+
     if random_offset.get() == 1:
         random_activate = True
         #print("Рандом включен")
@@ -169,16 +195,101 @@ def switch_random():
         random_activate = False
         #print("Рандом выключен")
 
+def save_settings():
+    global ACTIVATE_KEY
+
+    if hasattr(ACTIVATE_KEY, 'name') and ACTIVATE_KEY.name is not None:
+        key_to_save = ACTIVATE_KEY.name
+    else:
+        key_to_save = getattr(ACTIVATE_KEY, 'char', 'f8')
+
+    save_data = {
+        "min": min_entry.get(),
+        "sec": sec_entry.get(),
+        "millisec": millisec_entry.get(),
+        "activate_random": random_activate,
+        "random_offset": offset_choice_label.get(),
+        "selected_button": mouse_choice_label.get(),
+        "selected_hotkey": key_to_save
+    }
+
+    with open(SETTING_FILE, "w", encoding="utf-8") as file:
+        json.dump(save_data, file, indent=4, ensure_ascii=False)
+
+    #print("Данные сохранены.")
+    root.destroy()
+
+def load_settings():
+    global random_activate
+    global normal_key_name
+    global ACTIVATE_KEY
+    global CHANGED_ACTIVATE_KEY
+
+    try:
+        with open(SETTING_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        key_name = data.get("selected_hotkey", "f8")
+
+        if key_name in Key.__members__:
+            loaded_key = Key[key_name]
+        else:
+            loaded_key = KeyCode.from_char(key_name.lower())
+
+        ACTIVATE_KEY = loaded_key
+        CHANGED_ACTIVATE_KEY = loaded_key
+        normal_key_name = str(ACTIVATE_KEY).replace("Key.", "").replace("'", "").upper()
+        button_start.config(text=f"Start({normal_key_name})")
+        label_choice.config(text=normal_key_name)
+
+        min_entry.delete(0, tk.END)
+        min_entry.insert(0, data.get("min", "0"))
+
+        sec_entry.delete(0, tk.END)
+        sec_entry.insert(0, data.get("sec", "0"))
+
+        millisec_entry.delete(0, tk.END)
+        millisec_entry.insert(0, data.get("millisec", "40"))
+
+        offset_choice_label.delete(0, tk.END)
+        offset_choice_label.insert(0, data.get("random_offset", "20"))
+
+        saved_button = data.get("selected_button", "Left")
+        mouse_choice_label.set(saved_button)
+
+        random_activate = data.get("activate_random", False)
+        if random_activate == True:
+            random_offset.set(1)
+        else:
+            random_offset.set(0)
+
+    except FileNotFoundError:
+        messagebox.showwarning(
+            "Attention",
+            "The settings.json file was not found!\nDefault settings will be used. The file will be created automatically upon exit."
+        )
+
+    except json.JSONDecodeError:
+        messagebox.showerror(
+            "File Error",
+            "The settings.json file is corrupted or empty!\nThe file will be reset to default settings."
+        )
+    #print("Данные загруженны.")
+
+def theme_settings():
+    messagebox.showinfo("Attention", "in development")
+
 root = tk.Tk()
 root.title("Auto Clicker")
 root.geometry("520x420")
 root.attributes("-topmost", True)
 root.resizable(False, False)
-root.iconbitmap("icon.ico")
+root.iconbitmap("icons/icon.ico")
 vcmd = root.register(validate_entry)
 vcmd_2 = root.register(validate_entry_2)
 root.bind("<Control-Key>", hotkeys_any_layout)
 root.bind("<Button-1>", smart_focus_clear)
+root.protocol("WM_DELETE_WINDOW", save_settings)
 
 main_frame = tk.Frame(root,
                       height=420,
@@ -240,7 +351,7 @@ millisec_entry = tk.Entry(top_frame,
                          validate="key",
                          validatecommand=(vcmd, "%P")
                          )
-millisec_entry.insert(0, "10")
+millisec_entry.insert(0, "40")
 millisec_entry.pack(side="left", padx=(40, 0))
 
 millisec_time = tk.Label(top_frame,
@@ -387,7 +498,8 @@ button_theme = tk.Button(bottom_frame_bottom,
                          height=2,
                          width=13,
                          font="Arial 12",
-                         text="Theme\nSettings"
+                         text="Theme\nSettings",
+                         command=theme_settings
                          )
 button_theme.pack(expand=True)
 
@@ -397,10 +509,9 @@ setting_window.title("Hotkey settings")
 setting_window.geometry("300x180")
 setting_window.resizable(False, False)
 setting_window.attributes("-topmost", True)
-setting_window.iconbitmap("icon.ico")
-setting_window.iconbitmap("icon_2.ico")
+setting_window.iconbitmap("icons/icon_2.ico")
 setting_window.withdraw()
-setting_window.protocol("WM_DELETE_WINDOW", close_settings)
+setting_window.protocol("WM_DELETE_WINDOW", close_setting_no_changes)
 
 indent_frame = tk.Frame(setting_window, height=10, width=300, bg="white")
 indent_frame.pack(side="top")
@@ -426,7 +537,7 @@ label_choice = tk.Label(first_frame,
                          font="Arial 14",
                          height=2,
                          width=9,
-                         text="F6",
+                         text=normal_key_name,
                          relief="ridge"
                          )
 label_choice.pack(side="right", padx=(0, 35))
@@ -467,5 +578,6 @@ click_thread.start()
 keyboard_listener = KeyboardListener(on_press=on_press_keyboard)
 keyboard_listener.start()
 
+load_settings()
 root.mainloop()
 winmm.timeEndPeriod(1) 
