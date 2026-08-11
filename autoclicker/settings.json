@@ -1,0 +1,9 @@
+{
+    "min": "0",
+    "sec": "0",
+    "millisec": "20",
+    "activate_random": false,
+    "random_offset": "10",
+    "selected_button": "Left",
+    "selected_hotkey": "f8"
+}
