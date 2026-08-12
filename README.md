@@ -20,10 +20,39 @@ This tool allows you to automate mouse clicks with extreme precision, making it 
 
 ---
 
-## Technical tricks
+## 🚀 How to Install and Run
 
-* using WinApi function from ctypes for setting a time quantum:
-  winmm = ctypes.windll.winmm
-  winmm.timeBeginPeriod(1)
-  winmm.timeEndPeriod(1)
+### Option 1: Quick Install (For Users)
+1. Download the **`AutoClicker_setup.exe`** file from the root of this repository.
+2. Run the installer and follow the instructions on the screen.
+3. Launch the app using the desktop shortcut.
 
+### Option 2: Run from Source (For Developers)
+If you want to modify the code or run it manually:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com
+   ```
+2. Install the required dependencies:
+   ```bash
+   pip install pynput
+   ```
+3. Run the application:
+   ```bash
+   python autoclicker/autoclicker_GUI.py
+   ```
+
+---
+
+## 🛠️ Technical Details & Optimization
+* **Language:** Python 3.9+ (GUI) / C++ (Console Core)
+* **GUI Library:** Tkinter (Custom styled layouts)
+* **Input Hooking:** `pynput` for non-blocking global hotkey detection.
+* **Timer Precision:** Leverages `winmm.timeBeginPeriod(1)` to bypass the default 15.6ms Windows OS quantum restriction, forcing high-precision intervals.
+
+---
+
+## 📂 Repository Structure
+* `autoclicker/` — Main GUI project source code, assets, and icons.
+* `console_versions/` — Lightweight, console, minimalist implementations in Python and high-speed C++(Bonus).
