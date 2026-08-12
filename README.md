@@ -32,7 +32,7 @@ If you want to modify the code or run it manually:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/Nek1t0310/Python-AutoClicker
    ```
 2. Install the required dependencies:
    ```bash
