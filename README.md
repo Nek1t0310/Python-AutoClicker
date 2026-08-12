@@ -5,9 +5,9 @@ This tool allows you to automate mouse clicks with extreme precision, making it 
 ---
 
 ## 📸 Screenshots
-<p align="center">
-  <img src=""C:\Users\38050\Downloads\photo_2026-08-12_15-19-13.jpg"" width="100" alt="App Icon">
-</p>
+<img width="517" height="450" alt="photo_2026-08-12_15-19-19" src="https://github.com/user-attachments/assets/5e53d04c-5c52-4d6e-8f0b-eb3f54dff181" />
+<img width="523" height="453" alt="photo_2026-08-12_15-19-13" src="https://github.com/user-attachments/assets/fd5c8d7d-1313-4aec-9fd5-4d3d74847a10" />
+
 
 ## ✨ Features
 
