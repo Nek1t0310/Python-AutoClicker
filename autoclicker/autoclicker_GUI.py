@@ -255,7 +255,8 @@ def on_press_keyboard(key):
     active_hotkey()
 
     if (is_setting_hotkey_1 or is_setting_hotkey_2) and on_press_change: 
-        if key in(Key.shift, Key.shift_r, Key.ctrl, Key.ctrl_l, Key.ctrl_r, Key.alt, Key.alt_l, Key.alt_r):
+        if key in(Key.shift, Key.shift_r, Key.ctrl, Key.ctrl_l, Key.ctrl_r, Key.alt, Key.alt_l,
+                   Key.alt_r, Key.cmd, Key.enter, Key.caps_lock, Key.esc, Key.menu, Key.alt_gr, Key.print_screen):
             return
 
         key_name = str(key).replace("Key.", "").replace("'", "").upper()
