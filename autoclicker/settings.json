@@ -5,5 +5,13 @@
     "activate_random": false,
     "random_offset": "10",
     "selected_button": "Left",
-    "selected_hotkey": "f8"
+    "selected_button_2": "Right",
+    "activate_button_1": true,
+    "activate_button_2": true,
+    "selected_hotkey": "f8",
+    "selected_hotkey_vk": 119,
+    "selected_hotkey_2": "f9",
+    "selected_hotkey_vk_2": 120,
+    "always_on_top": true,
+    "theme": "light"
 }
