@@ -61,3 +61,7 @@ If you want to modify the code or run it manually:
 ## 📂 Repository Structure
 * `autoclicker/` — Main GUI project source code, assets, and icons.
 * `console_versions/` — Lightweight, console, minimalist implementations in Python and high-speed C++(Bonus).
+
+---
+
+Most likely, the project has reached its logical conclusion. I might add some new themes in the future, but you can easily do it yourselves too :)
