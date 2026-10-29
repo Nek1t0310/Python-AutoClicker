@@ -8,6 +8,12 @@ Featuring a dual-hotkey profile system, this tool allows you to switch click mod
 <img width="520" height="454" alt="image" src="https://github.com/user-attachments/assets/4cc78820-5196-4f88-91bf-cfb42aecff31" />
 <img width="521" height="451" alt="image" src="https://github.com/user-attachments/assets/537e84ff-06bf-45db-8a8f-313b838dd62b" />
 
+## 📸 Screenshots(THEMES UPDATE)
+<img width="854" height="449" alt="image" src="https://github.com/user-attachments/assets/205b68ad-34d3-4923-8f9a-df6031b47711" />
+<img width="888" height="451" alt="image" src="https://github.com/user-attachments/assets/9458a956-f4ca-409e-84b8-05c94beeb273" />
+
+---
+
 ## ✨ Features
 
 * **🔥 Dual-Hotkey Profile System:** Configure two completely independent click actions simultaneously.
