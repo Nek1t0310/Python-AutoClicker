@@ -46,6 +46,27 @@ BUTTON_MAP = {
     "Middle": Button.middle
 }
 
+themes = {
+    "light": {
+        "bg_main": "lightgrey",
+        "bg_widget": "white",
+        "text": "black",
+        "hover": "#e6e6e6"
+    },
+    "dark": {
+        "bg_main": "#1e1e1e",
+        "bg_widget": "#2d2d30",
+        "text": "#ffffff",
+        "hover": "#3e3e42"
+    },
+    "hack": {
+        "bg_main": "#121212",
+        "bg_widget": "#1A1A1A",
+        "text": "#00FF66",
+        "hover": "#1A3322"
+    }
+}
+
 def hotkeys_any_layout(event):
     if event.widget.winfo_class() != "Entry":
         return
@@ -173,6 +194,136 @@ def hotkey_choice_2():
     is_setting_hotkey_2 = True
     on_press_change = True
     label_choice_2.config(text="Choose key")
+
+
+def open_window_theme_settings():
+    window_theme_settings.deiconify()
+    window_theme_settings.grab_set()
+    window_theme_settings.focus_set()
+
+
+def close_window_theme_settings():
+    window_theme_settings.grab_release()
+    window_theme_settings.withdraw()
+
+
+def update_widget_colors(widget, colors):
+    # Сначала обновляем сам виджет (проверяем тип)
+    if isinstance(widget, ttk.Widget):
+        return
+
+    if isinstance(widget, tk.Button):
+        widget.config(
+            bg=colors["bg_widget"],
+            fg=colors["text"],
+            activebackground=colors["hover"],
+            activeforeground=colors["text"]
+        )
+    elif isinstance(widget, tk.Label):
+        widget.config(
+            bg=colors["bg_main"],
+            fg=colors["text"]
+        )
+    elif isinstance(widget, tk.Checkbutton):
+        widget.config(
+            bg=colors["bg_main"],
+            fg=colors["text"],
+            selectcolor=colors["bg_widget"],
+            activebackground=colors["bg_main"],
+            activeforeground=colors["text"]
+        )
+    elif isinstance(widget, tk.Radiobutton):
+        widget.config(
+            bg=colors["bg_main"],
+            fg=colors["text"],
+            selectcolor=colors["bg_main"],
+            activebackground=colors["bg_main"],
+            activeforeground=colors["text"]
+        )
+    elif isinstance(widget, tk.Entry):
+        widget.config(
+            bg=colors["bg_widget"],
+            fg=colors["text"],
+            insertbackground=colors["text"]
+        )
+    elif isinstance(widget, tk.LabelFrame):
+        # Для групп (как "Click interval" в твоем кликере)
+        widget.config(
+            bg=colors["bg_main"],
+            fg=colors["text"]
+        )
+    elif isinstance(widget, tk.Frame):
+        widget.config(bg=colors["bg_main"])
+    elif isinstance(widget, (tk.Toplevel, tk.Tk)):
+        widget.config(bg=colors["bg_main"])
+
+    # Получаем списслок дочерних элементов
+    children = widget.winfo_children()
+
+    # Рекурсивно обновляем дочерние элементы
+    for child in children:
+        update_widget_colors(child, colors)
+
+
+def apply_theme():
+    current = theme_var.get()
+    colors = themes[current]
+
+    update_widget_colors(root, colors)
+    update_widget_colors(window_theme_settings, colors)
+    update_widget_colors(setting_window, colors)
+
+    root.config(bg=colors["bg_main"])
+    window_theme_settings.config(bg=colors["bg_main"])
+    main_frame.config(bg=colors["bg_main"])
+    setting_window.config(bg=colors["bg_main"])
+
+    for rb in [rb_light, rb_dark, rb_hacker]:
+        rb.config(bg=colors["bg_main"],
+                fg=colors["text"],
+                selectcolor=colors["bg_main"],
+                activebackground=colors["bg_main"],
+                activeforeground=colors["text"],                
+        )
+
+    # отдельная работа с элементами ttk
+    style = ttk.Style()
+    style.theme_use('clam')
+
+    # базовая настройка
+    style.configure("TCombobox",
+                    fieldbackground=colors["bg_widget"],  # Фон поля ввода
+                    background=colors["bg_widget"],       # Фон кнопки (стрелочки)
+                    foreground=colors["text"],            # Цвет текста
+                    arrowcolor=colors["text"],            # Цвет стрелочки
+                    bordercolor=colors["hover"],          # Цвет рамки
+                    insertcolor=colors["text"],           # Цвет курсора
+                    selectbackground=colors["hover"],     # Фон при выделении
+                    selectforeground=colors["text"])      # Текст при выделении
+
+    # 2. Настройка состояния выбора из списка
+    style.map("TCombobox",
+              fieldbackground=[("readonly", colors["bg_widget"])],
+              selectbackground=[("readonly", colors["bg_widget"])],
+              selectforeground=[("readonly", colors["text"])],
+              foreground=[("readonly", colors["text"])],
+              arrowcolor=[("readonly", colors["text"])])
+
+    root.option_add('*TCombobox*Listbox.background', colors["bg_widget"])
+    root.option_add('*TCombobox*Listbox.foreground', colors["text"])
+    root.option_add('*TCombobox*Listbox.selectBackground', colors["hover"])
+    root.option_add('*TCombobox*Listbox.selectForeground', colors["text"])
+
+
+def tompost_choice():
+    global tompost
+
+    if tompost_user_choice.get() == True:
+        root.attributes("-topmost", True)
+        tompost = True
+    else:
+        root.attributes("-topmost", False)
+        tompost = False
 
 
 def open_settings():
@@ -332,6 +483,7 @@ def on_press_keyboard(key):
                 #print("Кликер включен(2 Кнопка)")
         return
 
+
 def random_info():
     messagebox.showinfo("About Random Offset", "The selected interval (e.g., 20 ms) will vary dynamically from -20 ms to +20 ms. This random deviation helps bypass basic anti-cheat checks during Minecraft PvP :)")
 
@@ -452,7 +604,9 @@ def save_settings():
         "selected_hotkey": key_to_save,
         "selected_hotkey_vk": vk_to_save,
         "selected_hotkey_2": key_to_save_2,
-        "selected_hotkey_vk_2": vk_to_save_2
+        "selected_hotkey_vk_2": vk_to_save_2,
+        "always_on_top": tompost_user_choice.get(),
+        "theme": theme_var.get()
     }
 
     with open(SETTING_FILE, "w", encoding="utf-8") as file:
@@ -557,6 +711,12 @@ def load_settings():
         else:
             random_offset.set(0)
 
+        always_on_top = data.get("always_on_top", True)
+        tompost_user_choice.set(always_on_top)
+        root.attributes("-topmost", always_on_top)
+        theme_var.set(data.get("theme", "light"))
+
+        apply_theme()
         active_hotkey()
         sync_selected_buttons()
 
@@ -576,6 +736,7 @@ def load_settings():
 
 def theme_settings():
     messagebox.showinfo("Attention", "in development")
+
 
 root = tk.Tk()
 root.title("Auto Clicker")
@@ -809,8 +970,8 @@ button_theme = tk.Button(bottom_frame_bottom,
                          height=2,
                          width=13,
                          font="Arial 12",
-                         text="Theme\nSettings",
-                         command=theme_settings
+                         text="Window &\nTheme",
+                         command=open_window_theme_settings
                          )
 button_theme.pack(side="left", padx=(110, 0))
 
@@ -913,6 +1074,46 @@ button_cancel = tk.Button(third_frame,
                          command=close_setting_no_changes
                         )
 button_cancel.pack(side="right", padx=(0, 50))
+
+#Window & Theme settings
+#===================================================
+window_theme_settings = tk.Toplevel(root)
+window_theme_settings.transient(root)
+window_theme_settings.config(bg="white")
+window_theme_settings.title("Window & Theme")
+window_theme_settings.geometry("300x280")
+window_theme_settings.resizable(False, False)
+window_theme_settings.attributes("-topmost", True)
+window_theme_settings.iconbitmap("icons/theme_settings.ico")
+window_theme_settings.withdraw()
+window_theme_settings.protocol("WM_DELETE_WINDOW", close_window_theme_settings)
+
+first_theme_frame = tk.Frame(window_theme_settings, height=300, width=300, bg="white")
+first_theme_frame.pack(side="top")
+first_theme_frame.pack_propagate(False)
+
+tompost_user_choice = tk.BooleanVar(value=True)
+tompost_choice = tk.Checkbutton(first_theme_frame,
+                                 font="Arial 20",
+                                 text="Always on Top",
+                                 bg="lightgrey",
+                                 fg="black",
+                                 relief="ridge",
+                                 variable=tompost_user_choice,
+                                 command=tompost_choice
+                                )
+tompost_choice.pack(side="top", pady=(60, 5))
+
+theme_var = tk.StringVar(value="light")
+
+rb_light = tk.Radiobutton(first_theme_frame, anchor="w", variable=theme_var, value="light", font="Arial 14", text="Light theme", command=apply_theme)
+rb_light.pack(side="top", fill="x", padx=45)
+
+rb_dark = tk.Radiobutton(first_theme_frame, anchor="w", variable=theme_var, value="dark", font="Arial 14", text="Dark theme", command=apply_theme)
+rb_dark.pack(side="top", fill="x", padx=45, pady=5)
+
+rb_hacker = tk.Radiobutton(first_theme_frame, anchor="w", variable=theme_var, value="hack", font="Arial 14", text="Hacker theme", command=apply_theme)
+rb_hacker.pack(side="top", fill="x", padx=45)
 
 #Основное включение программы:
 winmm.timeBeginPeriod(1) 
