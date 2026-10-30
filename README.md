@@ -5,8 +5,8 @@ Featuring a dual-hotkey profile system, this tool allows you to switch click mod
 ---
 
 ## 📸 Screenshots
-<img width="520" height="454" alt="image" src="https://github.com/user-attachments/assets/4cc78820-5196-4f88-91bf-cfb42aecff31" />
-<img width="521" height="451" alt="image" src="https://github.com/user-attachments/assets/537e84ff-06bf-45db-8a8f-313b838dd62b" />
+<img width="524" height="452" alt="image" src="https://github.com/user-attachments/assets/17954912-dd92-44d2-8e59-3afa31f81385" />
+<img width="519" height="453" alt="image" src="https://github.com/user-attachments/assets/281dfb17-e4fe-45ac-9497-99b62a3fd995" />
 
 ## 📸 Screenshots(THEMES UPDATE)
 <img width="854" height="449" alt="image" src="https://github.com/user-attachments/assets/205b68ad-34d3-4923-8f9a-df6031b47711" />
