@@ -734,10 +734,6 @@ def load_settings():
     #print("Данные загруженны.")
 
 
-def theme_settings():
-    messagebox.showinfo("Attention", "in development")
-
-
 root = tk.Tk()
 root.title("Auto Clicker")
 root.geometry("520x420")
