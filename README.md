@@ -64,4 +64,5 @@ If you want to modify the code or run it manually:
 
 ---
 
-Most likely, the project has reached its logical conclusion. Maybe I might add some new themes and visual amendments in the future, but you can easily do it yourselves too :)
+Essentially, the project has reached its logical conclusion. HOWEVER, I still have a couple of ideas that could be added to make playing Minecraft more convenient :)
+In the future, I might also add new themes and visual changes, but you are more than welcome to do that yourself :)
