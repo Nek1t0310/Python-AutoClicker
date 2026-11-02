@@ -1,6 +1,6 @@
 # Python Version Upgrade
 
-* added 2 click mode(click with delay mouse press), its can come in handy extraction cobblestone on cobblestone generator in Minecraft :)
+* added second click mode(click with delay mouse press), its can come in handy extraction cobblestone on cobblestone generator in Minecraft :)
 
 * also add `timeEndPeriod(1)` in python console version(like in a GUI versin)
 
