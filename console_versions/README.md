@@ -86,6 +86,3 @@ void clicker() {
     }
 }
 ```
-
-## In plans
-Anti-cheat bypass for Minecraft pvp servers to avoid being banned due to the same click interval
