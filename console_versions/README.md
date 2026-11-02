@@ -1,3 +1,44 @@
+# Python Version Upgrade
+
+* added 2 click mode(click with delay mouse press), its can come in handy extraction cobblestone on cobblestone generator in Minecraft :)
+
+* also add `timeEndPeriod(1)` in python console version(like in a GUI versin)
+
+new function with 2 mods:
+```python
+def clicker(q):
+    mode = None
+
+    while not exit_program:
+        if not q.empty():
+            mode = q.get()
+
+        if mode is None:
+            time.sleep(0.1)
+            continue
+
+        if mode == 1:
+            if clicking:
+                #start_time = time.perf_counter()
+                mouse.press(SELECTED_BUTTON)
+                mouse.release(SELECTED_BUTTON)
+                # while time.perf_counter() - start_time < CLICK_DELAY:
+                #     pass
+                click_event.wait(timeout=CLICK_DELAY)
+            else:
+                time.sleep(0.1)
+        elif mode == 2:
+            if clicking:
+                mouse.press(SELECTED_BUTTON)
+                click_event.wait(timeout=CLICK_DELAY_PRESS)
+                mouse.release(SELECTED_BUTTON)
+
+                click_event.wait(timeout=CLICK_DELAY)
+            else:
+                time.sleep(0.1)
+```
+also, working with a queue to process variable across threads
+
 # C++ Blazing Fast Autoclicker Version
 
 ## Technical Features
