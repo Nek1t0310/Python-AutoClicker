@@ -3,9 +3,9 @@
 #include <mmsystem.h>
 #include <thread>
 // #include <chrono>
+#include<atomic>
+// #pragma comment(lib, "winmm.lib") <- для компилятора MSVC
 using namespace std;
-
-// #pragma comment(lib, "winmm.lib") // <- для компилятора MSVC
 
 namespace Mouse {
     enum class Button {
@@ -14,28 +14,28 @@ namespace Mouse {
     };
 
     void PressLeft() {
-        INPUT in = {0};
+        INPUT in = { 0 };
         in.type = INPUT_MOUSE;
         in.mi.dwFlags = MOUSEEVENTF_LEFTDOWN;
         SendInput(1, &in, sizeof(INPUT));
     }
 
-    void RealeseLeft() {
-        INPUT in = {0};
+    void ReleaseLeft() {
+        INPUT in = { 0 };
         in.type = INPUT_MOUSE;
         in.mi.dwFlags = MOUSEEVENTF_LEFTUP;
         SendInput(1, &in, sizeof(INPUT));
     }
 
     void PressRight() {
-        INPUT in = {0};
+        INPUT in = { 0 };
         in.type = INPUT_MOUSE;
         in.mi.dwFlags = MOUSEEVENTF_RIGHTDOWN;
         SendInput(1, &in, sizeof(INPUT));
     }
 
-    void RealeseRight() {
-        INPUT in = {0};
+    void ReleaseRight() {
+        INPUT in = { 0 };
         in.type = INPUT_MOUSE;
         in.mi.dwFlags = MOUSEEVENTF_RIGHTUP;
         SendInput(1, &in, sizeof(INPUT));
@@ -43,12 +43,12 @@ namespace Mouse {
 
     void ClickLeft() {
         PressLeft();
-        RealeseLeft();
+        ReleaseLeft();
     }
 
     void ClickRight() {
         PressRight();
-        RealeseRight();
+        ReleaseRight();
     }
 }
 
@@ -59,35 +59,17 @@ const int OFF_KEY = VK_OEM_MINUS;
 bool clicking = false;
 bool exit_program = false;
 double CLICK_DELAY = 0.1;
+double CLICK_DELAY_PRESS = 0.5;
+atomic<int> mode_clicker = 0;
 
 Mouse::Button selected_button = Mouse::Button::Left;
 
 void clicker() {
     using namespace Mouse;
 
-    const DWORD BASE_SLEEP_MS = 10;
-    const double BASE_SLEEP_SEC = BASE_SLEEP_MS / 1000.0;
-
-    while(!exit_program) {
-        if (clicking) {
-            if (CLICK_DELAY <= BASE_SLEEP_SEC) {
-
-                int click_to_send = static_cast<int>(BASE_SLEEP_SEC / CLICK_DELAY);
-                if (click_to_send < 1) {
-                    click_to_send = 1;
-                }
-
-                for (int i = 0; i < click_to_send; i++) {
-                    if (selected_button == Button::Left) {
-                        ClickLeft();
-                    }
-                    else if (selected_button == Button::Right) {
-                        ClickRight();
-                    }
-                }
-                Sleep(BASE_SLEEP_MS);
-            }
-            else {
+    while (!exit_program) {
+        if (mode_clicker == 1) {
+            if (clicking) {
                 if (selected_button == Button::Left) {
                     ClickLeft();
                 }
@@ -103,6 +85,37 @@ void clicker() {
                 DWORD ms_sleep = (DWORD)(CLICK_DELAY * 1000.0);
                 Sleep(ms_sleep);
             }
+            else {
+                Sleep(100);
+            }
+        }
+        else if (mode_clicker == 2) {
+            if (clicking) {
+                // нажатие кнопки мышм:
+                if (selected_button == Button::Left) {
+                    PressLeft();
+                }
+                else if (selected_button == Button::Right) {
+                    PressRight();
+                }
+
+                DWORD ms_sleep_press = (DWORD)(CLICK_DELAY_PRESS * 1000.0);
+                Sleep(ms_sleep_press);
+
+                // реализация кнопки мыши:
+                if (selected_button == Button::Left) {
+                    ReleaseLeft();
+                }
+                else if (selected_button == Button::Right) {
+                    ReleaseRight();
+                }
+
+                DWORD ms_sleep_2 = (DWORD)(CLICK_DELAY * 1000.0);
+                Sleep(ms_sleep_2);
+            }
+            else {
+                Sleep(100);
+            }
         }
         else {
             Sleep(100);
@@ -111,7 +124,7 @@ void clicker() {
 }
 
 void on_press_keyboard() {
-    bool last_on_state = false; 
+    bool last_on_state = false;
     bool last_off_state = false;
 
     while (!exit_program) {
@@ -153,7 +166,7 @@ void on_press_keyboard() {
 void on_click_setup() {
     using namespace Mouse;
 
-    cout << "Нажмите кнопку мыши (прям на жкране) для выбрра" << "\n";
+    cout << "Нажмите кнопку мыши (прям на экране) для выбрра" << "\n";
 
     while (true) {
         if (GetAsyncKeyState(VK_LBUTTON) < 0) {
@@ -183,19 +196,27 @@ void on_click_setup() {
 }
 
 int main() {
+    SetConsoleCP(65001);
+    SetConsoleOutputCP(65001);
+
+    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD prev_mode;
+    GetConsoleMode(hInput, &prev_mode);
+    SetConsoleMode(hInput, prev_mode & ~ENABLE_QUICK_EDIT_MODE);
+
     timeBeginPeriod(1);
     thread click_thread(clicker);
 
     while (!exit_program) {
-        cout << "===========================" << "\n";
-        cout << "===Настройки Автокликера===" << "\n";
-        cout << "===========================" << "\n";
+        cout << "Выберете режим кликов: " << "\n";
+        cout << "1 - обычные клики" << "\n";
+        cout << "2 - клики с интервалом(зажатие клавиши)" << "\n";
 
-        double user_input;
+        int user_click_choice;
 
         while (true) {
-            cout << "Введите задержку в секундах или 0 для выхода: " << "\n";
-            cin >> user_input;
+            cout << "Выберете режим: ";
+            cin >> user_click_choice;
 
             if (cin.fail()) {
                 cin.clear();
@@ -203,15 +224,95 @@ int main() {
                 cout << "Ошибка, введите число. Установлена задержка по умолчанию: 0.1 сек." << "\n";
                 continue;
             }
+            else if (user_click_choice != 1 && user_click_choice != 2) {
+                cout << "Ошибка, выберете 1 из 2 режимов!" << endl;
+                continue;
+            }
             break;
         }
 
-        if (user_input <= 0) {
-            exit_program = true;
-            break;
+        mode_clicker = user_click_choice;
+
+        cout << "===========================" << "\n";
+        cout << "===Настройки Автокликера===" << "\n";
+        cout << "===========================" << "\n";
+
+        if (user_click_choice == 1) {
+            double user_input;
+
+            while (true) {
+                cout << "Введите задержку в секундах или 0 для выхода: " << "\n";
+                cin >> user_input;
+
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                    cout << "Ошибка, введите число." << "\n";
+                    continue;
+                }
+                break;
+            }
+
+            if (user_input <= 0) {
+                exit_program = true;
+                break;
+            }
+
+            CLICK_DELAY = user_input;
         }
 
-        CLICK_DELAY = user_input;
+        else if (user_click_choice == 2) {
+            double user_input_2;
+
+            while (true) {
+                cout << "Введите задержку в секундах между зажатиями(2 режим) или 0 для выхода: " << "\n";
+                cin >> user_input_2;
+
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                    cout << "Ошибка, введите число." << "\n";
+                    continue;
+                }
+                break;
+            }
+            
+            if (user_input_2 <= 0) {
+                exit_program = true;
+                break;
+            }
+
+            CLICK_DELAY = user_input_2;
+
+            double user_input_press;
+
+            while (true) {
+                cout << "Введите время зажатия кнопки мыши(2 режим) или всё таки 0 для выхода: " << "\n";
+                cin >> user_input_press;
+
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                    cout << "Ошибка, введите число." << "\n";
+                    continue;
+                }
+                break;
+            }
+
+            if (user_input_press <= 0) {
+                exit_program = true;
+                break;
+            }
+
+            CLICK_DELAY_PRESS = user_input_press;
+        }
+
+        else {
+            cout << "Ошибка, введите число. Установлена задержка по умолчанию 0.1 сек." << endl;
+            cout << "Для второго режима задержка в 0.5 секунд." << endl;
+            CLICK_DELAY = 0.1;
+            CLICK_DELAY_PRESS = 0.5;
+        }
 
         on_click_setup();
         cout << "Готово к работе" << "\n";
